@@ -12,3 +12,4 @@ A lot of people study, and a lot of people study while listening to music. All p
 
 In this corpus I’ll take different Spotify music playlists and try to compare them; what are the differences between the different playlists? Without their label is there a big difference?
 
+I will edit this later!
