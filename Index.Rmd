@@ -9,6 +9,12 @@ output:
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+library(flexdashboard)
+library(readr)
+library(ggplot2)
+library(dplyr)
+library(lubridate)
+library(plotly)
 
 ```
 
@@ -29,18 +35,12 @@ Chill Lofi Study Beats: https://open.spotify.com/playlist/37i9dQZF1DX8Uebhn9wzrS
 
 My hypothesis for this research is that there will be a lot of similarities, probably a low bpm and not too energetic for example. But I hope to find some interesting differences that I can then investigate further and possibly explain.
 
-Basic summary of the four datasets
+Basic summary of the four datasets.
 
-```{r cars, echo=FALSE}
-summary(mtcars)
-```
+## Visualization
 
-## Including Plots
+## Conclusion
 
-You can also embed plots, for example:
+I thought that the deadline was a day later oops, sorry everything is not working yet
 
-```{r pressure, echo=FALSE}
-plot(pressure)
-```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
