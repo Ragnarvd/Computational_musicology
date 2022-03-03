@@ -35,7 +35,7 @@ My hypothesis for this research is that there will be a lot of similarities, pro
 
 ### Valence Energy
 
-```{r happy}
+```{r energy and valence}
 pop <- get_playlist_audio_features("", "37i9dQZF1DWSoyxGghlqv5")
 classic <- get_playlist_audio_features("", "37i9dQZF1EIgLoMVUd9oTU")
 electronic <- get_playlist_audio_features("", "37i9dQZF1DX0wMD4IoQ5aJ")
@@ -97,7 +97,7 @@ Test test test
 
 ### The Godfather finale [chroma and timbre features]
 
-```{r hazes}
+```{r godfather}
 bzt <-
   get_tidy_audio_analysis("78Q2Em989i9lagCBf8XGyX") %>% 
   compmus_align(bars, segments) %>%
