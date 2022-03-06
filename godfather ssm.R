@@ -7,7 +7,7 @@ bzt <-
     pitches =
       map(segments,
           compmus_summarise, pitches,
-          method = "acentre", norm = "manhattan"
+          method = "rms", norm = "euclidean"
       )
   ) %>%
   mutate(
@@ -19,7 +19,7 @@ bzt <-
   )
 bind_rows(
   bzt %>% 
-    compmus_self_similarity(pitches, "aitchison") %>% 
+    compmus_self_similarity(pitches, "cosine") %>% 
     mutate(d = d / max(d), type = "Chroma"),
   bzt %>% 
     compmus_self_similarity(timbre, "euclidean") %>% 
