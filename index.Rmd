@@ -14,57 +14,6 @@ output:
   library(spotifyr)
   library(compmus)
 ```
-### The Godfather finale [chroma and timbre features]
-
-```{r godfather}
-bzt <-
-  get_tidy_audio_analysis("78Q2Em989i9lagCBf8XGyX") %>% 
-  compmus_align(bars, segments) %>%
-  select(bars) %>%
-  unnest(bars) %>%
-  mutate(
-    pitches =
-      map(segments,
-          compmus_summarise, pitches,
-          method = "rms", norm = "euclidean"
-      )
-  ) %>%
-  mutate(
-    timbre =
-      map(segments,
-          compmus_summarise, timbre,
-          method = "mean"
-      )
-  )
-bind_rows(
-  bzt %>% 
-    compmus_self_similarity(pitches, "cosine") %>% 
-    mutate(d = d / max(d), type = "Chroma"),
-  bzt %>% 
-    compmus_self_similarity(timbre, "euclidean") %>% 
-    mutate(d = d / max(d), type = "Timbre")
-) %>%
-  mutate() %>% 
-  ggplot(
-    aes(
-      x = xstart + xduration / 2,
-      width = xduration,
-      y = ystart + yduration / 2,
-      height = yduration,
-      fill = d
-    )
-  ) +
-  geom_tile() +
-  coord_fixed() +
-  facet_wrap(~type) +
-  scale_fill_viridis_c(option = "E", guide = "none") +
-  theme_classic() + 
-  labs(x = "", y = "")
-```
-
-***
-
-The two self-similarity matrices at the right, each summarized at the bar level but with axes in seconds, illustrate pitch- and timbre-based self-similarity within Nini Rotta’s  famous The Godfather Finale. The chroma-based matrix shows us that the piece exists of two parts, divided around the 110 sec. But furthermore the chroma similarities seems to be all over the place, although you can distinguish the violin part (110-160 sec). This part is also very visible in the Timbre-based matrix.
 
 ### The best music for studying
 
@@ -236,5 +185,65 @@ This is a visualization of two performances of the piano piece " Comptine d'un a
 It's the soundtrack of the French film Amelie and became popular ever since. It's a piano piece and notice that the left melody of the left hand part never changes (except from intensity). The right hand part has three distinctive melodies in a row that have different characteristics: The first one is catchy and has some mild dissonance, the second has fewer notes and leaves more space, and the third is a flurry of repeated triplets. Halfway through the song, the right hand jumps up an octave and plays the exact same thing as it did in the first half.
 
 The version of Yann Tierssen is 16 seconds longer than the version of lavina meijers (2:22, 2:06). I have to look at his again but I can't distinguish this immediately. I think this is not that that the version of Lavina is a bit faster but its more that it starts earlier and has last pause between the different pieces of the music/less fade. This explains the repetition that we can clearly see in the plot. 
+
+### The Godfather finale [chroma and timbre features]
+
+```{r godfather}
+bzt <-
+  get_tidy_audio_analysis("78Q2Em989i9lagCBf8XGyX") %>% 
+  compmus_align(bars, segments) %>%
+  select(bars) %>%
+  unnest(bars) %>%
+  mutate(
+    pitches =
+      map(segments,
+          compmus_summarise, pitches,
+          method = "rms", norm = "euclidean"
+      )
+  ) %>%
+  mutate(
+    timbre =
+      map(segments,
+          compmus_summarise, timbre,
+          method = "mean"
+      )
+  )
+bind_rows(
+  bzt %>% 
+    compmus_self_similarity(pitches, "cosine") %>% 
+    mutate(d = d / max(d), type = "Chroma"),
+  bzt %>% 
+    compmus_self_similarity(timbre, "euclidean") %>% 
+    mutate(d = d / max(d), type = "Timbre")
+) %>%
+  mutate() %>% 
+  ggplot(
+    aes(
+      x = xstart + xduration / 2,
+      width = xduration,
+      y = ystart + yduration / 2,
+      height = yduration,
+      fill = d
+    )
+  ) +
+  geom_tile() +
+  coord_fixed() +
+  facet_wrap(~type) +
+  scale_fill_viridis_c(option = "E", guide = "none") +
+  theme_classic() + 
+  labs(x = "", y = "")
+```
+
+***
+
+The two self-similarity matrices at the right, each summarized at the bar level but with axes in seconds, illustrate pitch- and timbre-based self-similarity within Nini Rotta’s  famous The Godfather Finale. The chroma-based matrix shows us that the piece exists of two parts, divided around the 110 sec. But furthermore the chroma similarities seems to be all over the place, although you can distinguish the violin part (110-160 sec). This part is also very visible in the Timbre-based matrix.
+
+### Just messing around.
+
+```{r messing around}
+
+
+
+```
 
 
