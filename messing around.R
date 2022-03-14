@@ -23,5 +23,35 @@ pink <- "#ff6f59"
 blue <- "#17bebb"
 
 
-Vieuw(study)
-features <- get_track_audio_features(pop)
+viz4 <- ggplot(study, aes(x=valence, fill=playlist_name,
+                            text = paste(playlist_name)))+
+  geom_density(alpha=0.7, color=NA)+
+  scale_fill_manual(values=c(green, yellow, pink, blue))+
+  labs(x="Valence", y="Density") +
+  guides(fill=guide_legend(title="country"))+
+  theme_minimal()+
+  ggtitle("Distribution of Valence Data")
+
+ggplotly(viz4, tooltip=c("text"))
+
+key_country <- study%>%
+  select(country, key)%>%
+  group_by(country, key)%>%
+  mutate(n=n())%>%
+  unique()%>%
+  group_by(key)%>%
+  mutate(total=sum(n))%>%
+  mutate(percent=round((n/total)*100))
+
+
+viz3 <- ggplot(key_country, aes(x=key, fill=country, y = n, 
+                                text = paste("Number of Songs: ", n, "<br>",
+                                             "Percent Songs in Key: ", percent, "%")))+
+  geom_bar(width=0.5, stat = "identity")+
+  scale_fill_manual(values=c(green, yellow, pink, blue))+
+  labs(x="Key", y="Number of Songs") +
+  guides(fill=guide_legend(title="country"))+
+  theme_minimal()+
+  ggtitle("Musical Key Makeup by Playlist")
+
+ggplotly(viz3, tooltip=c("text"))
