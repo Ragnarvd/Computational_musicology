@@ -37,7 +37,9 @@ My hypothesis for this research is that there will be a lot of similarities, pro
 
 There are a few interesting and atypecal tracks in the playlist. There are of course some tracks that feature in my own playlist and also in spotify's playlist (Una mattine, Comptine d'un autre été: L'après-midi) altough they are a different version. Maybe some atypical music are the movie soundtracks that are in my playlist like: Time-Hans zimmer and the Godfather finale- Nino Rotta.
 
-### The Tempo and Instrumentalness in study music
+### Track level features
+
+#### __The Tempo and Instrumentalness in study music__
 
 ```{r tempo and intrumentalness}
 pop <- get_playlist_audio_features("", "37i9dQZF1DWSoyxGghlqv5")
@@ -102,6 +104,47 @@ There is no consensus in the literature about what music is best for studying bu
 I plotted the instrumentalness on the y-axis, the tempo on the x-axis, the color is the energy of the song and the size is its popularity. 
 
 The plots are kind of what I expected. The Spotify music playlists are pretty clustered while my own study playlist is not so much. This is not really hard to explain. The Spotify playlists consist of one genre while my playlist is a mix of genres. 
+
+#### __The valence in the different playlistst__
+
+```{r some plots}
+library(dplyr)
+library(spotifyr)
+library(plotly)
+library(ggplot2)
+
+pop <- get_playlist_audio_features("", "37i9dQZF1DWSoyxGghlqv5")
+classic <- get_playlist_audio_features("", "37i9dQZF1EIgLoMVUd9oTU")
+electronic <- get_playlist_audio_features("", "37i9dQZF1DX0wMD4IoQ5aJ")
+studying <- get_playlist_audio_features("", "7ex5hFjCiAdaXy6FFoe2Vi")
+
+study <-
+  pop %>%
+  mutate(country = "Pop study") %>%
+  bind_rows(classic %>% mutate(country = "Classical study")) %>%
+  bind_rows(electronic %>% mutate(country = "Electronic study")) %>%
+  bind_rows(studying %>% mutate(country = "Stu(dying)"))%>%
+  mutate(
+    country = fct_relevel(country, "Pop study, Classical study, Electronical study", "Stu(dying)")
+  )
+green <- "#1ed760"
+yellow <- "#e7e247"
+pink <- "#ff6f59"
+blue <- "#17bebb"
+
+
+viz4 <- ggplot(study, aes(x=valence, fill=playlist_name,
+                            text = paste(playlist_name)))+
+  geom_density(alpha=0.7, color=NA)+
+  scale_fill_manual(values=c(green, yellow, pink, blue))+
+  labs(x="Valence", y="Density") +
+  guides(fill=guide_legend(title="country"))+
+  theme_minimal()+
+  ggtitle("Distribution of Valence Data")
+
+ggplotly(viz4, tooltip=c("text"))
+
+```
 
 ### Comptine d'un autre été: L'après-midi[chroma features].
 
@@ -238,7 +281,9 @@ bind_rows(
 
 The two self-similarity matrices at the right, each summarized at the bar level but with axes in seconds, illustrate pitch- and timbre-based self-similarity within Nini Rotta’s  famous The Godfather Finale. The chroma-based matrix shows us that the piece exists of two parts, divided around the 110 sec. But furthermore the chroma similarities seems to be all over the place, although you can distinguish the violin part (110-160 sec). This part is also very visible in the Timbre-based matrix.
 
-### Chordogram Time Hans Zimmer.
+### Chordogram and Keygram Time Hans Zimmer.
+
+#### __Chordogram__
 
 ```{r chordogram}
 circshift <- function(v, n) {
@@ -298,6 +343,38 @@ chord_templates <-
     "D#:min", circshift(minor_chord, 3)
   )
 
+twenty_five <-
+  get_tidy_audio_analysis("6ZFbXIJkuI1dVNWvzJzown") %>%
+  compmus_align(beats, segments) %>%
+  select(beats) %>%
+  unnest(beats) %>%
+  mutate(
+    pitches =
+      map(segments,
+          compmus_summarise, pitches,
+          method = "mean", norm = "manhattan" # summary, norm
+      )
+  )
+twenty_five %>% 
+  compmus_match_pitch_template(
+    chord_templates,         # Change to chord_templates if desired
+    method = "manhattan",  # Try different distance metrics
+    norm = "manhattan"     # Try different norms
+  ) %>%
+  ggplot(
+    aes(x = start + duration / 2, width = duration, y = name, fill = d)
+  ) +
+  geom_tile() +
+  scale_fill_viridis_c(guide = "none") +
+  theme_minimal() +
+  labs(x = "Time (s)", y = "")
+
+# over het algemeen, hoe meer geel hoe duidelijker een akkoord wordt herkend, blauw is slecht herkennen
+# 
+```
+#### __Keygram__
+```{r}
+
 key_templates <-
   tribble(
     ~name, ~template,
@@ -328,9 +405,9 @@ key_templates <-
   )
 twenty_five <-
   get_tidy_audio_analysis("6ZFbXIJkuI1dVNWvzJzown") %>%
-  compmus_align(beats, segments) %>%
-  select(beats) %>%
-  unnest(beats) %>%
+  compmus_align(sections, segments) %>%
+  select(sections) %>%
+  unnest(sections) %>%
   mutate(
     pitches =
       map(segments,
@@ -340,7 +417,7 @@ twenty_five <-
   )
 twenty_five %>% 
   compmus_match_pitch_template(
-    chord_templates,         # Change to chord_templates if desired
+    key_templates,         # Change to chord_templates if desired
     method = "manhattan",  # Try different distance metrics
     norm = "manhattan"     # Try different norms
   ) %>%
@@ -358,134 +435,61 @@ twenty_five %>%
 ```
 *** 
 
-Chromagram of Hans Zimmer - time, yellow -> good key recognition, blue not so good recognition. We can see a clear pattern.
+Chromagram of Hans Zimmer - time, yellow -> good key recognition, blue not so good recognition. We can see a clearly see a sideways z pattern in the chordogram. This is easy to explain, there is a repetition in the track that keeps coming back. In the keygram the key estimates are not correct, most of the song is misunderstood as G major, while it should be E minor. 
 
-More detailed anazyle will folow
+More detailed analyze will folow
 
-### Other plots, not finished
+### Novelty and Temp Runaway Kanye West [temporal features]
 
-```{r some plots}
-library(dplyr)
-library(spotifyr)
-library(plotly)
-library(ggplot2)
+#### __Tempogram Runaway__
 
-pop <- get_playlist_audio_features("", "37i9dQZF1DWSoyxGghlqv5")
-classic <- get_playlist_audio_features("", "37i9dQZF1EIgLoMVUd9oTU")
-electronic <- get_playlist_audio_features("", "37i9dQZF1DX0wMD4IoQ5aJ")
-studying <- get_playlist_audio_features("", "7ex5hFjCiAdaXy6FFoe2Vi")
+```{r}
+get_tidy_audio_analysis('3DK6m7It6Pw857FcQftMds') %>% 
+    tempogram(window_size = 8, hop_size = 1, cyclic = TRUE) %>% 
+    ggplot(aes(x = time, y = bpm, fill = power)) + 
+    geom_raster() + 
+    scale_fill_viridis_c(guide = 'none') +
+    labs(x = 'Time (s)', y = 'Tempo (BPM)') +
+    theme_classic()
 
-study <-
-  pop %>%
-  mutate(country = "Pop study") %>%
-  bind_rows(classic %>% mutate(country = "Classical study")) %>%
-  bind_rows(electronic %>% mutate(country = "Electronic study")) %>%
-  bind_rows(studying %>% mutate(country = "Stu(dying)"))%>%
-  mutate(
-    country = fct_relevel(country, "Pop study, Classical study, Electronical study", "Stu(dying)")
-  )
-green <- "#1ed760"
-yellow <- "#e7e247"
-pink <- "#ff6f59"
-blue <- "#17bebb"
-
-
-viz4 <- ggplot(study, aes(x=valence, fill=playlist_name,
-                            text = paste(playlist_name)))+
-  geom_density(alpha=0.7, color=NA)+
-  scale_fill_manual(values=c(green, yellow, pink, blue))+
-  labs(x="Valence", y="Density") +
-  guides(fill=guide_legend(title="country"))+
-  theme_minimal()+
-  ggtitle("Distribution of Valence Data")
-
-ggplotly(viz4, tooltip=c("text"))
+pata_pata <-
+  get_tidy_audio_analysis("3DK6m7It6Pw857FcQftMds") %>%
+  select(segments) %>%
+  unnest(segments)
 
 ```
+***
 
-### Other plots, not finished
-```{r plots}
-pop <- get_playlist_audio_features("", "37i9dQZF1DWSoyxGghlqv5")
-classic <- get_playlist_audio_features("", "37i9dQZF1EIgLoMVUd9oTU")
-electronic <- get_playlist_audio_features("", "37i9dQZF1DX0wMD4IoQ5aJ")
-studying <- get_playlist_audio_features("", "7ex5hFjCiAdaXy6FFoe2Vi")
+The Fourier-based tempogram at the left is an attempt to use Spotify's API to analyse the tempo of Kanye West "Runaway. Overall, Spotify estimates that the main tempo of this track is pretty low, around 87 BPM, but looking in more detail at the tempogram, we see vaguely the so-called *tempo octaves* +- 130 BPM. We also see that the tempo in the first 40 seconds is just below 100 BPM this is the "piano part" where just one tone is played repeatedly. In some freer-form sections of the piece, tempo estimation is almost impossible, this is clearly visible in the outro (the last 3 minutes of the song). Here Kanye ends the song with a three-minute outro of autotuned and overdriven wordless singing accompanied by string sections harmonizing with his vocals, his voice is Auto-Tuned and distorted beyond perceptibility. This is often interpreted as it is done on purpose and that is serves as a metaphor for how Kanye feels himself; unheared and the majority of people can't understand him.
 
-study <-
-  pop %>%
-  mutate(country = "Pop study") %>%
-  bind_rows(classic %>% mutate(country = "Classical study")) %>%
-  bind_rows(electronic %>% mutate(country = "Electronic study")) %>%
-  bind_rows(studying %>% mutate(country = "Stu(dying)"))%>%
-  mutate(
-    country = fct_relevel(country, "Pop study, Classical study, Electronical study", "Stu(dying)")
-  )
-green <- "#1ed760"
-yellow <- "#e7e247"
-pink <- "#ff6f59"
-blue <- "#17bebb"
+#### __Novelty functions Runaway__
 
-key_country <- study%>%
-  select(country, key)%>%
-  group_by(country, key)%>%
-  mutate(n=n())%>%
-  unique()%>%
-  group_by(key)%>%
-  mutate(total=sum(n))%>%
-  mutate(percent=round((n/total)*100))
+```{r}
+pata_pata %>%
+  mutate(loudness_max_time = start + loudness_max_time) %>%
+  arrange(loudness_max_time) %>%
+  mutate(delta_loudness = loudness_max - lag(loudness_max)) %>%
+  ggplot(aes(x = loudness_max_time, y = pmax(0, delta_loudness))) +
+  geom_line() +
+  xlim(0, 30) +
+  theme_minimal() +
+  labs(x = "Time (s)", y = "Novelty")
 
 
-viz3 <- ggplot(key_country, aes(x=key, fill=country, y = n, 
-                                text = paste("Number of Songs: ", n, "<br>",
-                                             "Percent Songs in Key: ", percent, "%")))+
-  geom_bar(width=0.5, stat = "identity")+
-  scale_fill_manual(values=c(green, yellow, pink, blue))+
-  labs(x="Key", y="Number of Songs") +
-  guides(fill=guide_legend(title="country"))+
-  theme_minimal()+
-  ggtitle("Musical Key Makeup by Playlist")
-
-ggplotly(viz3, tooltip=c("text"))
-
-
-```
-### Other plots, not finished
-
-
-```{r more plots}
-bebop <-
-  get_playlist_audio_features(
-    "thesoundsofspotify",
-    "7ex5hFjCiAdaXy6FFoe2Vi"
-  ) %>%
-  slice(1:30) %>%
-  add_audio_analysis()
-bigband <-
-  get_playlist_audio_features(
-    "thesoundsofspotify",
-    "2tyb47DidJEgrVQ6VwhO6M"
-  ) %>%
-  slice(1:30) %>%
-  add_audio_analysis()
-jazz <-
-  bebop %>%
-  mutate(genre = "My study playlist") %>%
-  bind_rows(bigband %>% mutate(genre = "Spotify study playlist"))
-
-jazz %>%
-  mutate(
-    timbre =
-      map(
-        segments,
-        compmus_summarise,
-        timbre,
-        method = "mean"
-      )
-  ) %>%
-  select(genre, timbre) %>%
+pata_pata %>%
+  arrange(start) %>%
+  mutate(timbre = map2(timbre, lag(timbre), `-`)) %>%
+  slice(-1) %>%
   compmus_gather_timbre() %>%
-  ggplot(aes(x = basis, y = value, fill = genre)) +
-  geom_violin() +
-  scale_fill_viridis_d() +
-  labs(x = "Spotify Timbre Coefficients", y = "", fill = "Genre")
+  group_by(start, duration) %>% 
+  summarise(novelty = sum(log1p(pmax(value, 0)))) %>% 
+  ggplot(aes(x = start + duration / 2, y = novelty)) +
+  geom_line() +
+  xlim(0, 30) +
+  theme_minimal() +
+  labs(x = "Time (s)", y = "Novelty")
 ```
 
+***
+
+Three different novelty functions; Energy, Chroma, Timbre. Energy is the clearest as expected, chroma all over the place, Timbre is better than expected. More detailed analyze will follow. 
