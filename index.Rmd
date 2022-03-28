@@ -6,6 +6,9 @@ output:
   flexdashboard::flex_dashboard:
     storyboard: true
     theme: flatly
+    css: styles.css
+    self_contained: false
+
     
 ---
 ```{r setup}
@@ -13,9 +16,46 @@ output:
   library(plotly)
   library(spotifyr)
   library(compmus)
+  library(protoclust)
+  library(tidymodels)
+  library(ggdendro)
+  library(heatmaply)
+
+get_conf_mat <- function(fit) {
+  outcome <- .get_tune_outcome_names(fit)
+  fit %>% 
+    collect_predictions() %>% 
+    conf_mat(truth = outcome, estimate = .pred_class)
+}  
+
+get_pr <- function(fit) {
+  fit %>% 
+    conf_mat_resampled() %>% 
+    group_by(Prediction) %>% mutate(precision = Freq / sum(Freq)) %>% 
+    group_by(Truth) %>% mutate(recall = Freq / sum(Freq)) %>% 
+    ungroup() %>% filter(Prediction == Truth) %>% 
+    select(class = Prediction, precision, recall)
+}  
+
 ```
 
-### The best music for studying
+```{r theme}
+# Define your own theme function below
+theme_vapor <- function() {
+    theme_minimal() +
+    theme(
+      text = element_text(family = "TTNorms", color = "#e7e247", size=14),
+      plot.title = element_text(hjust = 0.5),
+      plot.background = element_rect(fill = "#181818", colour="#181818"),
+      panel.background  = element_rect(fill = "#989898"),
+      legend.key = element_rect(fill = "#181818"),
+      #legend.background = element_rect(fill = "#131313")
+      panel.grid = element_line(color = "#e7e247")
+    )
+}
+```
+
+### The best music for studying {data-commentary-width=400}
 
 The main goal of this corpus is to compare playlists, to be specific, compare study playlists. A lot of people study, and a lot of people study while listening to music. All people are different and we also see this in their music taste; it's often said that classical music is great for studying and this is also backed by different studies but there also a lot of other kinds of music that students listen to: LoFi, techno etc.
 
@@ -36,6 +76,8 @@ I will compare my own study playlist (stu(dying)) with some popular spotify play
 My hypothesis for this research is that there will be a lot of similarities, probably a low bpm and not too energetic for example. But I hope to find some interesting differences that I can then investigate further and possibly explain.
 
 There are a few interesting and atypecal tracks in the playlist. There are of course some tracks that feature in my own playlist and also in spotify's playlist (Una mattine, Comptine d'un autre été: L'après-midi) altough they are a different version. Maybe some atypical music are the movie soundtracks that are in my playlist like: Time-Hans zimmer and the Godfather finale- Nino Rotta.
+
+<iframe style="border-radius:12px" src="https://open.spotify.com/embed/playlist/7ex5hFjCiAdaXy6FFoe2Vi?utm_source=generator" width="100%" height="380" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"></iframe>
 
 ### Track level features
 
@@ -89,7 +131,7 @@ february_dip <-
   scale_size_continuous(           # Fine-tune the sizes of each point.
     guide = "none"                 # Remove the legend for size.
   ) +
-  theme_light() +                  # Use a simpler theme.
+  theme_vapor() +                  # Use a simpler theme.
   labs(                            # Make the titles nice.
     x = "Tempo",
     y = "Instrumentalness"
@@ -139,7 +181,7 @@ viz4 <- ggplot(study, aes(x=valence, fill=playlist_name,
   scale_fill_manual(values=c(green, yellow, pink, blue))+
   labs(x="Valence", y="Density") +
   guides(fill=guide_legend(title="country"))+
-  theme_minimal()+
+  theme_vapor()+
   ggtitle("Distribution of Valence Data")
 
 ggplotly(viz4, tooltip=c("text"))
@@ -215,13 +257,14 @@ maria <-
       ),
   ) +
   scale_fill_viridis_c(option = "E", guide = "none") +
-  theme_classic() +
+  theme_vapor() +
   theme(axis.text.x = element_text(angle = 30, hjust = 1)) +
   labs(x = "Lavinia meijers", y = "Yann Tierssen")
 maria
 ```
 
 ***
+<iframe style="border-radius:12px" src="https://open.spotify.com/embed/track/06MWWxWRuBtYxcJP71tN0q?utm_source=generator" width="100%" height="380" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"></iframe>
 
 This is a visualization of two performances of the piano piece " Comptine d'un autre été - l'après midi" a performance of Lavina meijers, and the original performance by Yann Tierssen. I chose this music piece because the version of Lavina Meijers was in my playlist, and the version by Yann Tierssen was in the Classical study music playlist. 
 
@@ -273,11 +316,12 @@ bind_rows(
   coord_fixed() +
   facet_wrap(~type) +
   scale_fill_viridis_c(option = "E", guide = "none") +
-  theme_classic() + 
+  theme_vapor() + 
   labs(x = "", y = "")
 ```
 
 ***
+<iframe style="border-radius:12px" src="https://open.spotify.com/embed/track/7Es2gcDpA0ma6zEqgP6Wuc?utm_source=generator" width="100%" height="380" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"></iframe>
 
 The two self-similarity matrices at the right, each summarized at the bar level but with axes in seconds, illustrate pitch- and timbre-based self-similarity within Nini Rotta’s  famous The Godfather Finale. The chroma-based matrix shows us that the piece exists of two parts, divided around the 110 sec. But furthermore the chroma similarities seems to be all over the place, although you can distinguish the violin part (110-160 sec). This part is also very visible in the Timbre-based matrix.
 
@@ -366,7 +410,7 @@ twenty_five %>%
   ) +
   geom_tile() +
   scale_fill_viridis_c(guide = "none") +
-  theme_minimal() +
+  theme_vapor() +
   labs(x = "Time (s)", y = "")
 
 # over het algemeen, hoe meer geel hoe duidelijker een akkoord wordt herkend, blauw is slecht herkennen
@@ -426,7 +470,7 @@ twenty_five %>%
   ) +
   geom_tile() +
   scale_fill_viridis_c(guide = "none") +
-  theme_minimal() +
+  theme_vapor() +
   labs(x = "Time (s)", y = "")
 
 # over het algemeen, hoe meer geel hoe duidelijker een akkoord wordt herkend, blauw is slecht herkennen
@@ -434,6 +478,7 @@ twenty_five %>%
 
 ```
 *** 
+<iframe style="border-radius:12px" src="https://open.spotify.com/embed/track/6ZFbXIJkuI1dVNWvzJzown?utm_source=generator" width="100%" height="380" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"></iframe>
 
 Chromagram of Hans Zimmer - time, yellow -> good key recognition, blue not so good recognition. We can see a clearly see a sideways z pattern in the chordogram. This is easy to explain, there is a repetition in the track that keeps coming back. In the keygram the key estimates are not correct, most of the song is misunderstood as G major, while it should be E minor. 
 
@@ -486,10 +531,67 @@ pata_pata %>%
   ggplot(aes(x = start + duration / 2, y = novelty)) +
   geom_line() +
   xlim(0, 30) +
-  theme_minimal() +
+  theme_vapor() +
   labs(x = "Time (s)", y = "Novelty")
 ```
 
 ***
 
-Three different novelty functions; Energy, Chroma, Timbre. Energy is the clearest as expected, chroma all over the place, Timbre is better than expected. More detailed analyze will follow. 
+Two different novelty functions; Energy and Timbre. Energy is the clearest as expected, Timbre is better than expected. More detailed analyze will follow. 
+
+### What are the components of my study playlist?
+
+```{r halloween}
+halloween <- 
+  get_playlist_audio_features('bnfcollection', '7ex5hFjCiAdaXy6FFoe2Vi') %>% 
+  add_audio_analysis %>% 
+  mutate(
+    segments = 
+      map2(segments, key, compmus_c_transpose)) %>% 
+  mutate(
+    pitches = 
+      map(segments, 
+          compmus_summarise, pitches, 
+          method = 'mean', norm = 'manhattan'),
+    timbre =
+      map(
+        segments,
+        compmus_summarise, timbre,
+        method = 'mean')) %>% 
+  mutate(pitches = map(pitches, compmus_normalise, 'clr')) %>% 
+  mutate_at(vars(pitches, timbre), map, bind_rows) %>% 
+  unnest(cols = c(pitches, timbre))
+halloween_juice <- 
+  recipe(track.name ~
+           danceability +
+           energy +
+           loudness +
+           speechiness +
+           acousticness +
+           instrumentalness +
+           liveness +
+           valence +
+           tempo +
+           duration +
+           C + `C#|Db` + D + `D#|Eb` +
+           E + `F` + `F#|Gb` + G +
+           `G#|Ab` + A + `A#|Bb` + B +
+           c01 + c02 + c03 + c04 + c05 + c06 +
+           c07 + c08 + c09 + c10 + c11 + c12,
+         data = halloween) %>% 
+  step_range(all_predictors()) %>% 
+  prep(halloween %>% mutate(track.name = str_trunc(track.name, 20))) %>% 
+  juice %>% 
+  column_to_rownames('track.name')
+ggheatmap(
+  halloween_juice,
+  hclustfun = protoclust,
+  dist_method = 'manhattan'
+)
+```
+
+***
+
+The dendrogram and heatmap at right breaks my own study playlist down in .. .clusters, based on the glover distance.
+
+I have prioritized learning for my exams before working on my portfolio this week, so a more detailed analyze will follow. I have also created a own custom theme, I'm still working on this as you can see haha. 
