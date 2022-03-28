@@ -6,16 +6,15 @@
 body {background-color: #181818;}
 
 strong {font-family: 'TTNorms';
-        color: #2DE2E6;
+        color: #e7e247;
 }
 
 .storyboard-nav .sbframelist ul li.active {
-  background-image: url("sunset.png");
   background-repeat: no-repeat;
   background-position: center;
   background-size: 100px 100px;
-  background-color: #2DE2E6;
-  border-color: #2DE2E6;
+  background-color: #888888;
+  border-color: #888888;
   font-family: 'TTNorms';
 }
 
@@ -34,7 +33,6 @@ strong {font-family: 'TTNorms';
 background-position: right 50% bottom 0%;
 */
 .storyboard-nav .sbframelist ul li {
-  background-image: url("sunset.png");
   background-repeat: no-repeat;
   background-position: center;
   background-size: 100px 100px;
@@ -43,7 +41,7 @@ background-position: right 50% bottom 0%;
 
 .navbar-inverse {
     background-color: #121212;
-    border-color: #eb34b1;
+    border-color: #e7e247;
 }
 
 .navbar-inverse .navbar-brand {
