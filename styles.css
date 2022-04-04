@@ -1,0 +1,50 @@
+@font-face {
+    font-family: TTNorms;
+    src: url(TTNorms-ExtraBold.otf);
+}
+
+body {background-color: #181818;}
+
+strong {font-family: 'TTNorms';
+        color: #CEBC81;
+}
+
+.storyboard-nav .sbframelist ul li.active {
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 100px 100px;
+  background-color: #888888;
+  border-color: #888888;
+  font-family: 'TTNorms';
+}
+
+.chart-wrapper-flex{background-color: #181818;
+                    border-color: #181818;
+                    color: #fff;
+}
+
+.sbframe-commentary{background-color: #121212;
+                    border-color: #121212;
+                    color: #fff;
+}
+/*
+#1ed760 greyish color
+#1ed760 spotify green
+background-position: right 50% bottom 0%;
+*/
+.storyboard-nav .sbframelist ul li {
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 100px 100px;
+  font-family: 'TTNorms';
+}
+
+.navbar-inverse {
+    background-color: #557A95;
+    border-color: #7395AE;
+}
+
+.navbar-inverse .navbar-brand {
+    font-family: 'TTNorms';
+    color: #fff;
+}
